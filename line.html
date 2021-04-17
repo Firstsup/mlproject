@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>line</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+<script>
+    const height = 500
+    const width = 1200
+    const padding = 50
+    var data = [
+        [{'x': 'DT', 'y': 0.983870968}, {'x': 'RF', 'y': 0.983870968}, {'x': 'KNN', 'y': 0.85483871}, {
+            'x': 'LR',
+            'y': 0.870967742
+        }, {'x': 'SVM', 'y': 0.838709677}],
+        [{'x': 'DT', 'y': 1}, {'x': 'RF', 'y': 1}, {'x': 'KNN', 'y': 0.4}, {'x': 'LR', 'y': 0.3}, {'x': 'SVM', 'y': 0}],
+        [{'x': 'DT', 'y': 0.952380952}, {'x': 'RF', 'y': 0.952380952}, {'x': 'KNN', 'y': 0.470588235}, {
+            'x': 'LR',
+            'y': 0.428571429
+        }, {'x': 'SVM', 'y': 0}],
+        [{'x': 'DT', 'y': 0.016129032}, {'x': 'RF', 'y': 0.016129032}, {'x': 'KNN', 'y': 0.14516129}, {
+            'x': 'LR',
+            'y': 0.129032258
+        }, {'x': 'SVM', 'y': 0.161290323}],
+        [{'x': 'DT', 'y': 0.77419355}, {'x': 'RF', 'y': 0.83870968}, {'x': 'KNN', 'y': 0.80645161}, {
+            'x': 'LR',
+            'y': 0.83870968
+        }, {'x': 'SVM', 'y': 0.83870968}]
+    ]
+    var svg = d3.select("body")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+    const alg = ['DT', 'RF', 'KNN', 'LR', 'SVM']
+    var xScale = d3.scaleBand()
+        .domain(alg)
+        .range([padding, width - 6*padding])
+    var yScale = d3.scaleLinear()
+        .domain([0, 1])
+        .range([height - padding, padding]);
+    var xAxis = d3.axisBottom()
+        .scale(xScale);
+    var yAxis = d3.axisLeft()
+        .scale(yScale)
+        .ticks(2)
+    svg.append("g")
+        .call(xAxis)
+        .attr("transform", "translate(15," + (height - padding) + ")")
+    svg.append("g")
+        .call(yAxis)
+        .attr("transform", "translate(" + padding + ",0)")
+        .attr("transform", "translate(65,0)")
+    const color = ['#ff7a45', '#bae637', '#36cfc9', '#9254de', '#597ef7']
+    for (var j = 0; j < 5; j++) {
+        var line = d3.line()
+            .x(function (d, i) {
+                // console.log(xScale(alg[i]))
+                return xScale(alg[i])
+            })
+            .y(function (d, i) {
+                // console.log(data[j][i].y)
+                return yScale(data[j][i].y)
+            })
+            .curve(d3.curveCatmullRom.alpha(0.5));
+        svg.append("path")
+            .attr("class", "line")
+            .attr("d", line(data[j]))
+            .attr("stroke", function (d, i) {
+                return color[j]
+            })
+            .attr("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("transform", "translate(" + 2 * padding + ",0)")
+        var tooltip1
+        var tooltip2
+        svg.append("g")
+            .selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", function (d, i) {
+                return xScale(alg[i])
+            })
+            .attr("cy", function (d, i) {
+                return yScale(data[j][i].y)
+            })
+            .attr("r", 4)
+            .attr("transform", "translate(" + 2 * padding + ",0)")
+            .attr("fill", function (d, i) {
+                return color[j]
+            })
+            .attr("id", function (d, i) {
+                return data[j][i].y
+            })
+            .attr("cursor", "pointer")
+            .on("mouseover", function () {
+                tooltip1 = svg.append("rect")
+                    .attr("fill",'#f0f5ff')
+                    .attr("x", d3.select(this).attr("cx"))
+                    .attr("y", d3.select(this).attr("cy"))
+                    .attr("height", 20)
+                    .attr("width", 8*d3.select(this).attr("id").length+5)
+                    .attr("rx",5)
+                    .attr("ry",5)
+                    .attr("stroke",'#ffe7ba')
+                    .attr("stroke-width",3)
+                    .attr("transform", "translate(100,-19)")
+                tooltip2 = svg.append("text")
+                    .text(d3.select(this).attr("id"))
+                    .attr("x", d3.select(this).attr("cx"))
+                    .attr("y", d3.select(this).attr("cy"))
+                    .attr("transform", "translate(103,-3)")
+                    .attr("font-size", 14)
+            })
+            .on("mouseout", function () {
+                tooltip1.attr("display", "none")
+                tooltip2.attr("display", "none")
+            })
+        svg.append("rect")
+            .attr("fill", '#ff7a45')
+            .attr("height", 20)
+            .attr("width", 30)
+            .attr("x", width - 4 * padding)
+            .attr("y", 80)
+        svg.append("text")
+            .text('Accuracy')
+            .attr("x", width - 3* padding-5)
+            .attr("y", 97)
+            .attr("font-family","Serif")
+        svg.append("rect")
+            .attr("fill", '#bae637')
+            .attr("height", 20)
+            .attr("width", 30)
+            .attr("x", width - 4 * padding)
+            .attr("y", 110)
+        svg.append("text")
+            .text('Precision')
+            .attr("x", width - 3* padding-5)
+            .attr("y", 127)
+            .attr("font-family","Serif")
+        svg.append("rect")
+            .attr("fill", '#36cfc9')
+            .attr("height", 20)
+            .attr("width", 30)
+            .attr("x", width - 4 * padding)
+            .attr("y", 140)
+        svg.append("text")
+            .text('F1 Score')
+            .attr("x", width - 3* padding-5)
+            .attr("y", 157)
+            .attr("font-family","Serif")
+        svg.append("rect")
+            .attr("fill", '#9254de')
+            .attr("height", 20)
+            .attr("width", 30)
+            .attr("x", width - 4 * padding)
+            .attr("y", 170)
+        svg.append("text")
+            .text('Brier Loss')
+            .attr("x", width - 3* padding-5)
+            .attr("y", 187)
+            .attr("font-family","Serif")
+        svg.append("rect")
+            .attr("fill", '#597ef7')
+            .attr("height", 20)
+            .attr("width", 30)
+            .attr("x", width - 4 * padding)
+            .attr("y", 200)
+        svg.append("text")
+            .text('Loo Score')
+            .attr("x", width - 3* padding-5)
+            .attr("y", 217)
+            .attr("font-family","Serif")
+    }
+</script>
+</body>
+</html>
